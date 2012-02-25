@@ -12,19 +12,19 @@ private:
 		ConsoleState = nullptr;
 		//SetupConsoleSize(5,5);
 	}
-	charT* CurrentScreenBuffer;
-	charT* NextScreenBuffer;
+
 	static console InnerConsole;
+
+	charT* CurrentScreenBuffer;
+		//Just a big long array of char. need to emulate rows and colums.
+ 	charT* NextScreenBuffer;
 	ioState* ConsoleState;
-
-
-
 	
 	SHORT X;
 	SHORT Y;
 
-
 public:
+	typedef charT char_type;
 	~console()
 	{
 		delete ConsoleState;
@@ -32,8 +32,7 @@ public:
 		delete[] NextScreenBuffer;
 	}
 
-	typedef charT char_type;
-
+//Singleton getters
 	static console* GetConsole()
 	{
 		if(!InnerConsole.ConsoleState)
@@ -53,6 +52,13 @@ public:
 		return &InnerConsole;
 	}
 
+//Output Functions
+
+
+//Input Functions
+
+
+//Console Modifiers
 
 	void SetupConsoleSize(SHORT x, SHORT y)
 	{
@@ -147,6 +153,26 @@ public:
 		fn.dwFontSize.Y = y;
 		SetCurrentConsoleFontEx(ConsoleState->stout, false, &fn);
 	}
+	
+
+
+//AUX Functions
+	
+	size_t CoordToIndex(COORD pos)
+	{
+		// we don't want to index outside either bound (wrapping is not handled here)
+		if(pos.X<X && pos.Y < Y) 
+			return X * pos.Y + pos.X;
+		throw (ERROR_INVALID_INDEX);
+	}
+	size_t CoordToIndex(SHORT x, SHORT y)
+	{
+		// we don't want to index outside either bound (wrapping is not handled here)
+		if(x<X && y < Y) 
+			return X * y + x;
+		throw (ERROR_INVALID_INDEX);
+	}
+
 	COORD GetFontSize()
 	{
 		CONSOLE_FONT_INFOEX fn;
@@ -154,7 +180,6 @@ public:
 		GetCurrentConsoleFontEx(ConsoleState->stout, false, &fn);
 		return fn.dwFontSize;
 	}
-
 
 
 };
