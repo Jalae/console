@@ -9,19 +9,15 @@ class console
 private:
 	console()
 	{
-		CurrentScreenBuffer = nullptr;
-		NextScreenBuffer = nullptr;
 		ConsoleState = nullptr;
-		//SetupConsoleSize(5,5);
+		X=0;
+		Y=0;
 	}
 
 	static console InnerConsole;
 
-	//charT* CurrentScreenBuffer;
-		//Just a big long array of char. need to emulate rows and colums.
- 	//charT* NextScreenBuffer;
+
 	ioState* ConsoleState;
-	
 	SHORT X;
 	SHORT Y;
 
@@ -30,8 +26,6 @@ public:
 	~console()
 	{
 		delete ConsoleState;
-		delete[] CurrentScreenBuffer;
-		delete[] NextScreenBuffer;
 	}
 
 //Singleton getters
@@ -97,21 +91,9 @@ public:
 		if(SetConsoleScreenBufferSize(ConsoleState->stout, ScreenCoord) == 0)
 			throw(GetLastError());
 
-		if(CurrentScreenBuffer)//if we have a screen buffer delete it
-		{
-			delete[] CurrentScreenBuffer;
-		}
-		
-		if(NextScreenBuffer) //technicly when one of these exist they will both... but just to be sure.
-		{
-			delete[] NextScreenBuffer;
-		}
-
 		this->X = x;//make the size variables the size of the buffers
 		this->Y = y;
 
-		CurrentScreenBuffer = new charT[X*Y];
-		NextScreenBuffer = new charT[X*Y];
 	}
 
 	void HideCursor()
@@ -159,21 +141,7 @@ public:
 
 
 //AUX Functions
-	
-	size_t CoordToIndex(COORD pos)
-	{
-		// we don't want to index outside either bound (wrapping is not handled here)
-		if(pos.X<X && pos.Y < Y) 
-			return X * pos.Y + pos.X;
-		throw (ERROR_INVALID_INDEX);
-	}
-	size_t CoordToIndex(SHORT x, SHORT y)
-	{
-		// we don't want to index outside either bound (wrapping is not handled here)
-		if(x<X && y < Y) 
-			return X * y + x;
-		throw (ERROR_INVALID_INDEX);
-	}
+
 
 	COORD GetFontSize()
 	{
@@ -185,6 +153,12 @@ public:
 
 
 };
+
+bool operator== (CHAR_INFO& a, CHAR_INFO& b)
+{
+	return true;
+}
+
 template<typename charT> console<charT> console<charT>::InnerConsole;
 typedef console<char> console_;
 typedef console<wchar_t> console_w;

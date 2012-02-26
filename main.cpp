@@ -11,6 +11,9 @@ try{
 		_console::console_w * c;
 		c = _console::console_w::GetConsole();
 
+		CHAR_INFO a = {'a', FOREGROUND_RED};
+		CHAR_INFO b = {'b', FOREGROUND_RED};
+
 
 	}catch(DWORD e)
 	{

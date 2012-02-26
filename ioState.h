@@ -39,9 +39,7 @@ public:
 			NULL
 			);
 		
-		CHAR_INFO a = {'a', FOREGROUND_RED};
-		CHAR_INFO b = {'b', FOREGROUND_RED};
-		if(a == b);
+
 
 		M_POS.X = 0;
 		M_POS.Y = 0;
