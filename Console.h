@@ -17,11 +17,12 @@ private:
 	static console InnerConsole;
 
 
-	ioState* ConsoleState;
+	
 	SHORT X;
 	SHORT Y;
 
 public:
+	ioState* ConsoleState;
 	typedef charT char_type;
 	~console()
 	{
