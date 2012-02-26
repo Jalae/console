@@ -14,6 +14,7 @@ try{
 
 	}catch(DWORD e)
 	{
+
 		wchar_t errorMsg[256];
 		FormatMessage(
 			FORMAT_MESSAGE_FROM_SYSTEM,
