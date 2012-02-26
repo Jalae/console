@@ -15,9 +15,9 @@ private:
 
 	static console InnerConsole;
 
-	charT* CurrentScreenBuffer;
+	//charT* CurrentScreenBuffer;
 		//Just a big long array of char. need to emulate rows and colums.
- 	charT* NextScreenBuffer;
+ 	//charT* NextScreenBuffer;
 	ioState* ConsoleState;
 	
 	SHORT X;
