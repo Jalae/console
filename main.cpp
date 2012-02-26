@@ -8,8 +8,8 @@ void main ()
 
 try{
 
-		console_ * weee;
-		weee = console_::GetConsole();
+		_console::console_w * c;
+		c = _console::console_w::GetConsole();
 
 
 	}catch(DWORD e)

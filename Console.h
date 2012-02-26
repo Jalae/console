@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include "ioState.h"
 
+namespace _console
+{
 template <typename charT>
 class console
 {
@@ -183,8 +185,8 @@ public:
 
 
 };
-
+template<typename charT> console<charT> console<charT>::InnerConsole;
 typedef console<char> console_;
 typedef console<wchar_t> console_w;
 
-template<typename charT> console<charT> console<charT>::InnerConsole;
+}

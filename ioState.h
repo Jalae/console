@@ -5,7 +5,8 @@
 
 #define IOSTATE_
 
-
+namespace _console
+{
 class ioState
 {
 public:
@@ -37,6 +38,11 @@ public:
 			CONSOLE_TEXTMODE_BUFFER,
 			NULL
 			);
+		
+		CHAR_INFO a = {'a', FOREGROUND_RED};
+		CHAR_INFO b = {'b', FOREGROUND_RED};
+		if(a == b);
+
 		M_POS.X = 0;
 		M_POS.Y = 0;
 		numRead = 0;
@@ -55,6 +61,6 @@ public:
 
 void clearInputEvents(ioState&);
 void getInputEvents(ioState&);
-
+}
 
 #endif
