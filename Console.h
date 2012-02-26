@@ -81,7 +81,13 @@ public:
 		WindowRect.Left = WindowRect.Top = (SHORT) 0;
 		if(SetConsoleScreenBufferSize(ConsoleState->stout, ScreenCoord) == 0)
 			throw (GetLastError());
+		//do the same for second buffer
+		if(SetConsoleScreenBufferSize(ConsoleState->out_buffer, ScreenCoord) == 0)
+			throw (GetLastError());
+
 		if(SetConsoleWindowInfo(ConsoleState->stout, TRUE, &WindowRect) == 0)
+			throw (GetLastError());
+		if(SetConsoleWindowInfo(ConsoleState->out_buffer, TRUE, &WindowRect) == 0)
 			throw (GetLastError());
 
 		//and now that the info thinks it is smaller than we want increase the
@@ -89,6 +95,8 @@ public:
 		ScreenCoord.X = x;
 		ScreenCoord.Y = y;
 		if(SetConsoleScreenBufferSize(ConsoleState->stout, ScreenCoord) == 0)
+			throw(GetLastError());
+		if(SetConsoleScreenBufferSize(ConsoleState->out_buffer, ScreenCoord) == 0)
 			throw(GetLastError());
 
 		this->X = x;//make the size variables the size of the buffers
@@ -141,6 +149,48 @@ public:
 
 
 //AUX Functions
+
+	void SwapDisplayBuffers()
+	{
+		//swap the names
+		ToggleDisplayBuffers();
+		//now we need to make the secondarybuffer the same as what is being displayed.
+		//this can be done in 1 of 2 ways.
+		// 1: COPY EVERYTHING. this may or may not be fast in runtime. i have no idea because i currently don't know if writes to a not displaying buffer suffers display lag
+		// 2: COPY CHANGES. this requires the code to walk through and compare every element, fairly computation intensive, but may be considerably faster if there is lag
+		//method 1
+		CHAR_INFO buffer[X*Y];
+		COORD size = {{X}{Y}};
+		COORD pos = {{0}{0}};
+		SMALL_RECT* rec = {{0}{0}{X}{Y}};
+		ReadConsoleOutput(
+						stout,
+						buffer,
+						size,
+						pos,
+						&rec
+					);
+		WriteConsoleOutput(
+						out_buffer,
+						buffer,
+						size,
+						pos,
+						&rec
+					);
+
+	}
+
+	void ToggleDisplayBuffers()
+	{
+		HANDLE temp;
+		temp = ConsoleState->stout;
+		ConsoleState->stout = ConsoleState->out_buffer;
+		ConsoleState->out_buffer = temp;
+		//make the active buffer the previous secondarybuffer
+		//NOTE: these lines may need changed, if switching buffers suffers from console lag for every charactor.
+		SetConsoleActiveScreenBuffer(ConsoleState->stout);
+	}
+
 
 
 	COORD GetFontSize()
