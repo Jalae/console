@@ -1,59 +1,65 @@
 #include <Windows.h>
 #include "ioState.h"
 
-namespace _console
+#ifndef _NC_CONSOLE__
+#define _NC_CONSOLE__
+
+namespace nitrocorp
 {
-template <typename charT>
-class console
-{
-private:
-	static console InnerConsole;
+
+	namespace console
+	{
+	template <typename charT>
+	class console
+	{
+	private:
+		static console InnerConsole;
 	
 
-	console()
-	{
-		ConsoleState = nullptr;
-		ConsoleState = new ioState;
-		HideCursor();
-		BufferSize.X = 0;
-		BufferSize.Y = 0;
-	}
+		console()
+		{
+			ConsoleState = nullptr;
+			ConsoleState = new ioState;
+			HideCursor();
+			BufferSize.X = 0;
+			BufferSize.Y = 0;
+		}
 
-	ioState* ConsoleState;
+		ioState* ConsoleState;
 
-	COORD BufferSize;
+		COORD BufferSize;
 
-	void SwapDisplayBuffers()
-	{
-		//swap the names
-		ToggleDisplayBuffers();
-		//now we need to make the secondarybuffer the same as what is being displayed.
-		//this can be done in 1 of 2 ways.
-		// 1: COPY EVERYTHING. this may or may not be fast in runtime. i have no idea because i currently don't know if writes to a not displaying buffer suffers display lag
-		// 2: COPY CHANGES. this requires the code to walk through and compare every element, fairly computation intensive, but may be considerably faster if there is lag
-		//method 1
-		CHAR_INFO * const buffer = new CHAR_INFO [BufferSize.X * BufferSize.Y];
-		COORD size = BufferSize;
-		COORD pos = {0,0};
-		SMALL_RECT rec = {0,0,BufferSize.X,BufferSize.Y};
-		ReadConsoleOutput(
-						ConsoleState->stout,
-						buffer,
-						size,
-						pos,
-						&rec
-					);
-		WriteConsoleOutput(
-						ConsoleState->out_buffer,
-						buffer,
-						size,
-						pos,
-						&rec
-					);
-		delete[] buffer;
+		void SwapDisplayBuffers()
+		{
+			//swap the names
+			ToggleDisplayBuffers();
+			//now we need to make the secondarybuffer the same as what is being displayed.
+			//this can be done in 1 of 2 ways.
+			// 1: COPY EVERYTHING. this may or may not be fast in runtime. i have no idea because i currently don't know if writes to a not displaying buffer suffers display lag
+			// 2: COPY CHANGES. this requires the code to walk through and compare every element, fairly computation intensive, but may be considerably faster if there is lag
+			//method 1
+			CHAR_INFO * const buffer = new CHAR_INFO [BufferSize.X * BufferSize.Y];
+			COORD size = BufferSize;
+			COORD pos = {0,0};
+			SMALL_RECT rec = {0,0,BufferSize.X,BufferSize.Y};
+			ReadConsoleOutput(
+							ConsoleState->stout,
+							buffer,
+							size,
+							pos,
+							&rec
+						);
+			WriteConsoleOutput(
+							ConsoleState->out_buffer,
+							buffer,
+							size,
+							pos,
+							&rec
+						);
+			delete[] buffer;
 
-	}
-	void ToggleDisplayBuffers()
+		}
+											void ToggleDisplayBuffers()
 	{
 		HANDLE temp;
 		temp = ConsoleState->stout;
@@ -66,39 +72,39 @@ private:
 
 
 
-public:
+	public:
 
-	typedef charT char_type;
-	~console()
-	{
-		delete ConsoleState;
-	}
+		typedef charT char_type;
+		~console()
+		{
+			delete ConsoleState;
+		}
 
-//Singleton getters
-	static console* GetConsole()
-	{
-		InnerConsole.SetConsoleSize(0,0);
-		return &InnerConsole;
-	}
+	//Singleton getters
+		static console* GetConsole()
+		{
+			InnerConsole.SetConsoleSize(0,0);
+			return &InnerConsole;
+		}
 
-	static console* GetConsole(SHORT x, SHORT y)
-	{
-		SetConsoleSize(x,y);	
-		return &InnerConsole;
-	}
+		static console* GetConsole(SHORT x, SHORT y)
+		{
+			SetConsoleSize(x,y);	
+			return &InnerConsole;
+		}
 
-//Output Functions
-
-
-//Input Functions
+	//Output Functions
 
 
-//Console Modifiers
-	void SetConsoleSize(COORD size)
+	//Input Functions
+
+
+	//Console Modifiers
+					void SetConsoleSize(COORD size)
 	{
 		SetConsoleSize(size.X, size.Y);
 	}
-	void SetConsoleSize(SHORT x, SHORT y)
+																																										void SetConsoleSize(SHORT x, SHORT y)
 	{
 		SMALL_RECT WindowRect;
 		COORD ScreenCoord;
@@ -146,7 +152,7 @@ public:
 
 	}
 
-	void HideCursor()
+										void HideCursor()
 	{
 		//hide cursor
 		CONSOLE_CURSOR_INFO info;
@@ -155,7 +161,7 @@ public:
 		SetConsoleCursorInfo(ConsoleState->stout,&info);
 		SetConsoleCursorInfo(ConsoleState->out_buffer,&info);
 	}
-	void ShowCursor()
+										void ShowCursor()
 	{
 		//hide cursor
 		CONSOLE_CURSOR_INFO info;
@@ -165,7 +171,7 @@ public:
 		SetConsoleCursorInfo(ConsoleState->out_buffer,&info);
 	}
 
-	void DisableWraping()
+									void DisableWraping()
 	{
 		DWORD mode;
 		GetConsoleMode(ConsoleState->stout, &mode);
@@ -173,7 +179,7 @@ public:
 		SetConsoleMode(ConsoleState->stout, mode);
 		SetConsoleMode(ConsoleState->out_buffer, mode);
 	}
-	void EnableWraping()
+									void EnableWraping()
 	{
 		DWORD mode;
 		GetConsoleMode(ConsoleState->stout, &mode);
@@ -182,7 +188,7 @@ public:
 		SetConsoleMode(ConsoleState->out_buffer, mode);
 	}
 
-	void SetFontSize(SHORT x, SHORT y)
+											void SetFontSize(SHORT x, SHORT y)
 	{
 		CONSOLE_FONT_INFOEX fn;
 		fn.cbSize = sizeof( CONSOLE_FONT_INFOEX );
@@ -194,34 +200,36 @@ public:
 	}
 	
 
-	void Draw()
+		void Draw()
+		{
+			SwapDisplayBuffers();
+		}
+	//AUX Functions
+
+
+
+
+		COORD GetFontSize()
+		{
+			CONSOLE_FONT_INFOEX fn;
+			fn.cbSize = sizeof( CONSOLE_FONT_INFOEX );
+			GetCurrentConsoleFontEx(ConsoleState->stout, false, &fn);
+			return fn.dwFontSize;
+		}
+
+
+	};
+
+	bool operator== (CHAR_INFO& a, CHAR_INFO& b)
 	{
-		SwapDisplayBuffers();
-	}
-//AUX Functions
-
-
-
-
-	COORD GetFontSize()
-	{
-		CONSOLE_FONT_INFOEX fn;
-		fn.cbSize = sizeof( CONSOLE_FONT_INFOEX );
-		GetCurrentConsoleFontEx(ConsoleState->stout, false, &fn);
-		return fn.dwFontSize;
+		return true;
 	}
 
+	template<typename charT> console<charT> console<charT>::InnerConsole;
+	typedef console<char> console_;
+	typedef console<wchar_t> console_w;
+	typedef console<TCHAR> console_T;
 
-};
-
-bool operator== (CHAR_INFO& a, CHAR_INFO& b)
-{
-	return true;
+	}
 }
-
-template<typename charT> console<charT> console<charT>::InnerConsole;
-typedef console<char> console_;
-typedef console<wchar_t> console_w;
-typedef console<TCHAR> console_T;
-
-}
+#endif

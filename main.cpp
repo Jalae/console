@@ -7,7 +7,7 @@ void main ()
 {
 
 try{
-	using namespace _console;
+	using namespace nitrocorp::console;
 	{
 		COORD size = {{4},{4}};
 		console_w * c;

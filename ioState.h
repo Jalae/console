@@ -1,16 +1,16 @@
 #include <Windows.h>
 #include <iostream>
 
-#ifndef IOSTATE_
-
-#define IOSTATE_
-
-namespace _console
+#ifndef _NC_IOSTATE__
+#define _NC_IOSTATE__
+namespace nitrocorp
 {
-class ioState
-{
-public:
-	ioState()
+	namespace console
+	{
+	class ioState
+	{
+	public:
+																																			ioState()
 	{
 		stin = GetStdHandle(STD_INPUT_HANDLE);
 		stout = CreateConsoleScreenBuffer( 
@@ -48,17 +48,18 @@ public:
 		inputStat = nullptr;
 	}
 
-	HANDLE stout;
-	HANDLE stin;
-	HANDLE out_buffer;
-	DWORD numRead, numEvents;
-	COORD M_POS;
-	INPUT_RECORD * inputStat;
-};
+		HANDLE stout;
+		HANDLE stin;
+		HANDLE out_buffer;
+		DWORD numRead, numEvents;
+		COORD M_POS;
+		INPUT_RECORD * inputStat;
+	};
 
 
-void clearInputEvents(ioState&);
-void getInputEvents(ioState&);
+	void clearInputEvents(ioState&);
+	void getInputEvents(ioState&);
+	}
 }
 
 #endif
