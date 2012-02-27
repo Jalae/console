@@ -21,8 +21,11 @@ Thumbs.db
 *.log
 [Bb]in
 [Dd]ebug*/
+ipch/
 *.lib
 *.sbr
+*.sdf
+*.opensdf
 obj/
 [Rr]elease*/
 _ReSharper*/
