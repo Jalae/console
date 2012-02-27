@@ -59,7 +59,7 @@ namespace nitrocorp
 			delete[] buffer;
 
 		}
-											void ToggleDisplayBuffers()
+		void ToggleDisplayBuffers()
 	{
 		HANDLE temp;
 		temp = ConsoleState->stout;
@@ -86,7 +86,6 @@ namespace nitrocorp
 			InnerConsole.SetConsoleSize(0,0);
 			return &InnerConsole;
 		}
-
 		static console* GetConsole(SHORT x, SHORT y)
 		{
 			SetConsoleSize(x,y);	
@@ -100,11 +99,11 @@ namespace nitrocorp
 
 
 	//Console Modifiers
-					void SetConsoleSize(COORD size)
+		void SetConsoleSize(COORD size)
 	{
 		SetConsoleSize(size.X, size.Y);
 	}
-																																										void SetConsoleSize(SHORT x, SHORT y)
+		void SetConsoleSize(SHORT x, SHORT y)
 	{
 		SMALL_RECT WindowRect;
 		COORD ScreenCoord;
@@ -152,7 +151,7 @@ namespace nitrocorp
 
 	}
 
-										void HideCursor()
+		void HideCursor()
 	{
 		//hide cursor
 		CONSOLE_CURSOR_INFO info;
@@ -161,7 +160,7 @@ namespace nitrocorp
 		SetConsoleCursorInfo(ConsoleState->stout,&info);
 		SetConsoleCursorInfo(ConsoleState->out_buffer,&info);
 	}
-										void ShowCursor()
+		void ShowCursor()
 	{
 		//hide cursor
 		CONSOLE_CURSOR_INFO info;
@@ -170,8 +169,7 @@ namespace nitrocorp
 		SetConsoleCursorInfo(ConsoleState->stout,&info);
 		SetConsoleCursorInfo(ConsoleState->out_buffer,&info);
 	}
-
-									void DisableWraping()
+		void DisableWraping()
 	{
 		DWORD mode;
 		GetConsoleMode(ConsoleState->stout, &mode);
@@ -179,7 +177,7 @@ namespace nitrocorp
 		SetConsoleMode(ConsoleState->stout, mode);
 		SetConsoleMode(ConsoleState->out_buffer, mode);
 	}
-									void EnableWraping()
+		void EnableWraping()
 	{
 		DWORD mode;
 		GetConsoleMode(ConsoleState->stout, &mode);
@@ -188,7 +186,7 @@ namespace nitrocorp
 		SetConsoleMode(ConsoleState->out_buffer, mode);
 	}
 
-											void SetFontSize(SHORT x, SHORT y)
+		void SetFontSize(SHORT x, SHORT y)
 	{
 		CONSOLE_FONT_INFOEX fn;
 		fn.cbSize = sizeof( CONSOLE_FONT_INFOEX );
