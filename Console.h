@@ -82,10 +82,10 @@ private:
 		}
 		return s;
 	}
-	template <> wchar_t* ParseEscape <wchar_t> (wchar_t *s, WORD& attrib)
+	template <> wchar_t* ParseEscape <wchar_t> (wchar_t * s, WORD& attrib)
 	{
 		wchar_t E[NUMBEROFESCAPE] = {L'$', L'#'};
-		s++;
+//		s++;
 		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
 		{
 			if(*s == E[i]) //we found our char
@@ -219,7 +219,7 @@ public:
 			{
 				//figureout if str* is an escape sequence-|
 				//if it is change attrib to match---------|-1 function 
-				ParseEscape(str, attrib);
+				str = ParseEscape(str, attrib);
 				//build temp
 				temp = BuildCharInfo(*str, attrib);
 				SMALL_RECT rec = {vCursorPos.X,vCursorPos.Y,vCursorPos.X,vCursorPos.Y};
