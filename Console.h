@@ -7,24 +7,67 @@ template <typename charT>
 class console
 {
 private:
+	static console InnerConsole;
+	
+
 	console()
 	{
 		ConsoleState = nullptr;
 		ConsoleState = new ioState;
 		HideCursor();
-		X=0;
-		Y=0;
+		BufferSize.X = 0;
+		BufferSize.Y = 0;
 	}
 
-	static console InnerConsole;
+	ioState* ConsoleState;
+
+	COORD BufferSize;
+
+	void SwapDisplayBuffers()
+	{
+		//swap the names
+		ToggleDisplayBuffers();
+		//now we need to make the secondarybuffer the same as what is being displayed.
+		//this can be done in 1 of 2 ways.
+		// 1: COPY EVERYTHING. this may or may not be fast in runtime. i have no idea because i currently don't know if writes to a not displaying buffer suffers display lag
+		// 2: COPY CHANGES. this requires the code to walk through and compare every element, fairly computation intensive, but may be considerably faster if there is lag
+		//method 1
+		CHAR_INFO * const buffer = new CHAR_INFO [BufferSize.X * BufferSize.Y];
+		COORD size = BufferSize;
+		COORD pos = {0,0};
+		SMALL_RECT rec = {0,0,BufferSize.X,BufferSize.Y};
+		ReadConsoleOutput(
+						ConsoleState->stout,
+						buffer,
+						size,
+						pos,
+						&rec
+					);
+		WriteConsoleOutput(
+						ConsoleState->out_buffer,
+						buffer,
+						size,
+						pos,
+						&rec
+					);
+		delete[] buffer;
+
+	}
+	void ToggleDisplayBuffers()
+	{
+		HANDLE temp;
+		temp = ConsoleState->stout;
+		ConsoleState->stout = ConsoleState->out_buffer;
+		ConsoleState->out_buffer = temp;
+		//make the active buffer the previous secondarybuffer
+		//NOTE: these lines may need changed, if switching buffers suffers from console lag for every charactor.
+		SetConsoleActiveScreenBuffer(ConsoleState->stout);
+	}
 
 
-	
-	SHORT X;
-	SHORT Y;
 
 public:
-	ioState* ConsoleState;
+
 	typedef charT char_type;
 	~console()
 	{
@@ -51,14 +94,17 @@ public:
 
 
 //Console Modifiers
-
+	void SetConsoleSize(COORD size)
+	{
+		SetConsoleSize(size.X, size.Y);
+	}
 	void SetConsoleSize(SHORT x, SHORT y)
 	{
 		SMALL_RECT WindowRect;
 		COORD ScreenCoord;
 
 		//if the size is the same.... well we're done.
-		if(x==X && y==Y)
+		if(x==BufferSize.X && y==BufferSize.Y)
 			return;
 
 		ScreenCoord = GetLargestConsoleWindowSize(ConsoleState->stout);
@@ -95,8 +141,8 @@ public:
 		if(SetConsoleScreenBufferSize(ConsoleState->out_buffer, ScreenCoord) == 0)
 			throw(GetLastError());
 
-		this->X = x;//make the size variables the size of the buffers
-		this->Y = y;
+		BufferSize.X = x;//make the size variables the size of the buffers
+		BufferSize.Y = y;
 
 	}
 
@@ -148,49 +194,13 @@ public:
 	}
 	
 
-
+	void Draw()
+	{
+		SwapDisplayBuffers();
+	}
 //AUX Functions
 
-	void SwapDisplayBuffers()
-	{
-		//swap the names
-		ToggleDisplayBuffers();
-		//now we need to make the secondarybuffer the same as what is being displayed.
-		//this can be done in 1 of 2 ways.
-		// 1: COPY EVERYTHING. this may or may not be fast in runtime. i have no idea because i currently don't know if writes to a not displaying buffer suffers display lag
-		// 2: COPY CHANGES. this requires the code to walk through and compare every element, fairly computation intensive, but may be considerably faster if there is lag
-		//method 1
-		CHAR_INFO buffer[X*Y];
-		COORD size = {{X}{Y}};
-		COORD pos = {{0}{0}};
-		SMALL_RECT* rec = {{0}{0}{X}{Y}};
-		ReadConsoleOutput(
-						stout,
-						buffer,
-						size,
-						pos,
-						&rec
-					);
-		WriteConsoleOutput(
-						out_buffer,
-						buffer,
-						size,
-						pos,
-						&rec
-					);
 
-	}
-
-	void ToggleDisplayBuffers()
-	{
-		HANDLE temp;
-		temp = ConsoleState->stout;
-		ConsoleState->stout = ConsoleState->out_buffer;
-		ConsoleState->out_buffer = temp;
-		//make the active buffer the previous secondarybuffer
-		//NOTE: these lines may need changed, if switching buffers suffers from console lag for every charactor.
-		SetConsoleActiveScreenBuffer(ConsoleState->stout);
-	}
 
 
 	COORD GetFontSize()
