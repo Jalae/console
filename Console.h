@@ -23,11 +23,14 @@ private:
 		HideCursor();
 		BufferSize.X = 0;
 		BufferSize.Y = 0;
+		vCursorPos.X = 0;
+		vCursorPos.Y = 0;
 	}
 
 	ioState* ConsoleState;
 
 	COORD BufferSize;
+	COORD vCursorPos;
 
 	void SwapDisplayBuffers()
 	{
