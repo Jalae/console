@@ -9,10 +9,10 @@ void main ()
 try{
 	using namespace _console;
 	{
-		const int X(150), Y(50); 
+		const int X(200), Y(50); 
 		console_w * c;
 		c = console_w::GetConsole();
-		c->SetupConsoleSize(X,Y);
+		c->SetConsoleSize(X,Y);
 
 		//test speed of toggling Display buffers
 		CHAR_INFO bufferA[X*Y];
@@ -21,10 +21,10 @@ try{
 		{
 			for(size_t j = 0; j < Y; j++)
 			{
-				bufferA[j*X + i].Char.UnicodeChar =  42;
-				bufferA[j*X + i].Attributes = 1;
-				bufferB[j*X + i].Char.UnicodeChar =  50;
-				bufferB[j*X + i].Attributes = 1;
+				bufferA[j*X + i].Char.UnicodeChar =  15000+j*X+i;
+				bufferA[j*X + i].Attributes = 7;
+				bufferB[j*X + i].Char.UnicodeChar =  8000+j*X+i;
+				bufferB[j*X + i].Attributes = 7;
 			}
 		}
 		COORD size = {{X},{Y}};

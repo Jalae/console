@@ -10,6 +10,8 @@ private:
 	console()
 	{
 		ConsoleState = nullptr;
+		ConsoleState = new ioState;
+		HideCursor();
 		X=0;
 		Y=0;
 	}
@@ -32,20 +34,13 @@ public:
 //Singleton getters
 	static console* GetConsole()
 	{
-		if(!InnerConsole.ConsoleState)
-		{
-			InnerConsole.ConsoleState = new ioState;
-			InnerConsole.SetupConsoleSize(0,0);
-		}
+		InnerConsole.SetConsoleSize(0,0);
 		return &InnerConsole;
 	}
+
 	static console* GetConsole(SHORT x, SHORT y)
 	{
-		if(!InnerConsole.ConsoleState)
-		{
-			InnerConsole.ConsoleState = new ioState;
-		}
-		SetupConsoleSize(x,y);
+		SetConsoleSize(x,y);	
 		return &InnerConsole;
 	}
 
@@ -57,7 +52,7 @@ public:
 
 //Console Modifiers
 
-	void SetupConsoleSize(SHORT x, SHORT y)
+	void SetConsoleSize(SHORT x, SHORT y)
 	{
 		SMALL_RECT WindowRect;
 		COORD ScreenCoord;
@@ -112,6 +107,7 @@ public:
 		GetConsoleCursorInfo(ConsoleState->stout,&info);
 		info.bVisible=false;
 		SetConsoleCursorInfo(ConsoleState->stout,&info);
+		SetConsoleCursorInfo(ConsoleState->out_buffer,&info);
 	}
 	void ShowCursor()
 	{
@@ -120,6 +116,7 @@ public:
 		GetConsoleCursorInfo(ConsoleState->stout,&info);
 		info.bVisible=true;
 		SetConsoleCursorInfo(ConsoleState->stout,&info);
+		SetConsoleCursorInfo(ConsoleState->out_buffer,&info);
 	}
 
 	void DisableWraping()
@@ -128,13 +125,15 @@ public:
 		GetConsoleMode(ConsoleState->stout, &mode);
 		mode &= ~ENABLE_WRAP_AT_EOL_OUTPUT;
 		SetConsoleMode(ConsoleState->stout, mode);
+		SetConsoleMode(ConsoleState->out_buffer, mode);
 	}
 	void EnableWraping()
 	{
 		DWORD mode;
-		GetConsoleMode(gameState.stout, &mode);
+		GetConsoleMode(ConsoleState->stout, &mode);
 		mode |= ENABLE_WRAP_AT_EOL_OUTPUT;
-		SetConsoleMode(gameState.stout, mode);
+		SetConsoleMode(ConsoleState->stout, mode);
+		SetConsoleMode(ConsoleState->out_buffer, mode);
 	}
 
 	void SetFontSize(SHORT x, SHORT y)
@@ -145,6 +144,7 @@ public:
 		fn.dwFontSize.X = x;
 		fn.dwFontSize.Y = y;
 		SetCurrentConsoleFontEx(ConsoleState->stout, false, &fn);
+		SetCurrentConsoleFontEx(ConsoleState->out_buffer, false, &fn)
 	}
 	
 
@@ -191,7 +191,6 @@ public:
 		//NOTE: these lines may need changed, if switching buffers suffers from console lag for every charactor.
 		SetConsoleActiveScreenBuffer(ConsoleState->stout);
 	}
-
 
 
 	COORD GetFontSize()
