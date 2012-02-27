@@ -213,5 +213,6 @@ bool operator== (CHAR_INFO& a, CHAR_INFO& b)
 template<typename charT> console<charT> console<charT>::InnerConsole;
 typedef console<char> console_;
 typedef console<wchar_t> console_w;
+typedef console<TCHAR> console_T;
 
 }
