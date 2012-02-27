@@ -12,7 +12,7 @@ COORD const ORIGIN = {0,0};
 COORD const ONE_COORD = {1,1};
 SMALL_RECT const ZERO_RECT = {0,0,0,0};
 SMALL_RECT const ONE_RECT = {0,0,1,1};
-size_t const NUMBEROFESCAPE = 2;
+size_t const NUMBEROFESCAPE = 3;
 
 template <typename charT>
 class console
@@ -30,61 +30,22 @@ private:
 		BufferSize.Y = 0;
 		vCursorPos.X = 0;
 		vCursorPos.Y = 0;
+		CurrentAttribute = 15;//black background white text
 	}
 
 	ioState* ConsoleState;
 
 	COORD BufferSize;
 	COORD vCursorPos;
+	WORD CurrentAttribute;
 
 	//These functions look at the given charactor and determine if it is
 	//the start of an escape sequence. if it is it changes the attribute
 	//for that escape sequence. 
-	template <typename charT> charT* ParseEscape(charT * s, WORD& attrib){}//you lose sir
-	template <> char* ParseEscape <char> (char * s, WORD& attrib)
+	template <typename charT> charT* ParseEscape(charT * s){}//you lose sir
+	template <> char* ParseEscape <char> (char * s)
 	{
-		char E[NUMBEROFESCAPE] = {'$', '#'};
-		s++;
-		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
-		{
-			if(*s == E[i]) //we found our char
-			{
-				//increment the pointer. we are now looking for the same char again,
-				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
-				s++;
-				if(*s == E[i])
-					break; //we are escaping, to print the escape charactor
-				switch(*s)
-				{
-				case '0':attrib = 0 << i*4; break;
-				case '1':attrib = 1 << i*4; break;
-				case '2':attrib = 2 << i*4; break;
-				case '3':attrib = 3 << i*4; break;
-				case '4':attrib = 4 << i*4; break;
-				case '5':attrib = 5 << i*4; break;
-				case '6':attrib = 6 << i*4; break;
-				case '7':attrib = 7 << i*4; break;
-				case '8':attrib = 8 << i*4; break;
-				case '9':attrib = 9 << i*4; break;
-				case 'a': case 'A':attrib = 10 << i*4; break;
-				case 'b': case 'B':attrib = 11 << i*4; break;
-				case 'c': case 'C':attrib = 12 << i*4; break;
-				case 'd': case 'D':attrib = 13 << i*4; break;
-				case 'e': case 'E':attrib = 14 << i*4; break;
-				case 'f': case 'F':attrib = 15 << i*4; break;
-				//cool huh?
-				default:  s--; break;
-				}
-				s++;
-				return s; //somehow have to check for the other escape 
-			}
-
-		}
-		return s;
-	}
-	template <> wchar_t* ParseEscape <wchar_t> (wchar_t * s, WORD& attrib)
-	{
-		wchar_t E[NUMBEROFESCAPE] = {L'$', L'#'};
+		char E[NUMBEROFESCAPE] = {'$', '#', '\n'};
 //		s++;
 		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
 		{
@@ -93,49 +54,118 @@ private:
 				//increment the pointer. we are now looking for the same char again,
 				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
 				s++;
+
 				if(*s == E[i])
-					break; //we are escaping, to print the escape charactor
-				switch(*s)
+					break; //we are escaping, to print the escape charactor. this isn't finding one
+
+				switch(i)
 				{
-				case L'0':attrib = 0 << i*4; break;
-				case L'1':attrib = 1 << i*4; break;
-				case L'2':attrib = 2 << i*4; break;
-				case L'3':attrib = 3 << i*4; break;
-				case L'4':attrib = 4 << i*4; break;
-				case L'5':attrib = 5 << i*4; break;
-				case L'6':attrib = 6 << i*4; break;
-				case L'7':attrib = 7 << i*4; break;
-				case L'8':attrib = 8 << i*4; break;
-				case L'9':attrib = 9 << i*4; break;
-				case L'a': case L'A':attrib = 10 << i*4; break;
-				case L'b': case L'B':attrib = 11 << i*4; break;
-				case L'c': case L'C':attrib = 12 << i*4; break;
-				case L'd': case L'D':attrib = 13 << i*4; break;
-				case L'e': case L'E':attrib = 14 << i*4; break;
-				case L'f': case L'F':attrib = 15 << i*4; break;
-				//cool huh?
-				default:  s--; break;
+					case 0: case 1:
+					switch(*s)
+					{
+						case '0':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 0 << i*4; break;
+						case '1':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 1 << i*4; break;
+						case '2':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 2 << i*4; break;
+						case '3':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 3 << i*4; break;
+						case '4':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 4 << i*4; break;
+						case '5':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 5 << i*4; break;
+						case '6':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 6 << i*4; break;
+						case '7':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 7 << i*4; break;
+						case '8':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 8 << i*4; break;
+						case '9':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 9 << i*4; break;
+						case 'a': case 'A':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 10 << i*4; break;
+						case 'b': case 'B':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 11 << i*4; break;
+						case 'c': case 'C':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 12 << i*4; break;
+						case 'd': case 'D':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 13 << i*4; break;
+						case 'e': case 'E':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 14 << i*4; break;
+						case 'f': case 'F':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 15 << i*4; break;
+						//cool huh?
+						default:  s--; break;
+					}
+					s++;
+					break;
+
+					case 2: // \n
+						vCursorPos.Y = vCursorPos.Y+1;
+						vCursorPos.X = 0;
+						break;
+					default: ;
 				}
+				i = -1; //we found one. start looking again
+
+			}
+
+		}
+		return s;
+	}
+	template <> wchar_t* ParseEscape <wchar_t> (wchar_t * s)
+	{
+		wchar_t E[NUMBEROFESCAPE] = {L'$', L'#', L'\n'};
+//		s++;
+		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
+		{
+			if(*s == E[i]) //we found our char
+			{
+				//increment the pointer. we are now looking for the same char again,
+				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
 				s++;
-				return s; //somehow have to check for the other escape 
+
+				if(*s == E[i])
+					break; //we are escaping, to print the escape charactor. this isn't finding one
+
+				switch(i)
+				{
+					case 0: case 1:
+					switch(*s)
+					{
+						case L'0':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 0 << i*4; break;
+						case L'1':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 1 << i*4; break;
+						case L'2':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 2 << i*4; break;
+						case L'3':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 3 << i*4; break;
+						case L'4':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 4 << i*4; break;
+						case L'5':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 5 << i*4; break;
+						case L'6':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 6 << i*4; break;
+						case L'7':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 7 << i*4; break;
+						case L'8':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 8 << i*4; break;
+						case L'9':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 9 << i*4; break;
+						case L'a': case L'A':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 10 << i*4; break;
+						case L'b': case L'B':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 11 << i*4; break;
+						case L'c': case L'C':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 12 << i*4; break;
+						case L'd': case L'D':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 13 << i*4; break;
+						case L'e': case L'E':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 14 << i*4; break;
+						case L'f': case L'F':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 15 << i*4; break;
+						//cool huh?
+						default:  s--; break;
+					}
+					s++;
+					break;
+
+					case 2: // \n
+						vCursorPos.Y = vCursorPos.Y+1;
+						vCursorPos.X = 0;
+						break;
+					default: ;
+				}
+				i = -1; //we found one. start looking again
+
 			}
 
 		}
 		return s;
 	}
 
-	template <typename charT> CHAR_INFO BuildCharInfo(charT c, WORD attrib){}//you get nothing
-	template <> CHAR_INFO BuildCharInfo<char>(char c, WORD attrib)
+	template <typename charT> CHAR_INFO BuildCharInfo(charT c){}//you get nothing
+	template <> CHAR_INFO BuildCharInfo<char>(char c)
 	{
 		CHAR_INFO ci;
-		ci.Attributes = attrib;
+		ci.Attributes = CurrentAttribute;
 		ci.Char.AsciiChar = c;
 		return ci;
 	}
-	template <> CHAR_INFO BuildCharInfo<wchar_t>(wchar_t c, WORD attrib)
+	template <> CHAR_INFO BuildCharInfo<wchar_t>(wchar_t c)
 	{
 		CHAR_INFO ci;
-		ci.Attributes = attrib;
+		ci.Attributes = CurrentAttribute;
 		ci.Char.UnicodeChar = c;
 		return ci;
 	}
@@ -152,17 +182,14 @@ private:
 		CHAR_INFO * buffer  = new CHAR_INFO [BufferSize.X * BufferSize.Y];
 		COORD size = BufferSize;
 		SMALL_RECT rec = {0,0,BufferSize.X-1,BufferSize.Y-1};
-		bool success = ReadConsoleOutput(
+		ReadConsoleOutput(
 						ConsoleState->stout,
 						buffer,
 						size,
 						ORIGIN,
 						&rec
 					);
-		if(!success)
-		{
-			//break here;
-		}
+
 		WriteConsoleOutput(
 						ConsoleState->out_buffer,
 						buffer,
@@ -214,14 +241,15 @@ public:
 	void Write(charT* str)
 	{
 			CHAR_INFO temp;
-			WORD attrib=8;
 			while(*str)
 			{
 				//figureout if str* is an escape sequence-|
 				//if it is change attrib to match---------|-1 function 
-				str = ParseEscape(str, attrib);
+				str = ParseEscape(str);
+				if(!*str)
+					return; //we don't want to write a 0
 				//build temp
-				temp = BuildCharInfo(*str, attrib);
+				temp = BuildCharInfo(*str);
 				SMALL_RECT rec = {vCursorPos.X,vCursorPos.Y,vCursorPos.X,vCursorPos.Y};
 				WriteConsoleOutput(
 						ConsoleState->out_buffer,
