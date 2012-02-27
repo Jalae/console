@@ -9,6 +9,7 @@
 namespace nitrocorp { namespace console {
 
 COORD const ORIGIN = {0,0};
+COORD const ONE_COORD = {1,1};
 SMALL_RECT const ZERO_RECT = {0,0,0,0};
 SMALL_RECT const ONE_RECT = {0,0,1,1};
 size_t const NUMBEROFESCAPE = 2;
@@ -39,21 +40,21 @@ private:
 	//These functions look at the given charactor and determine if it is
 	//the start of an escape sequence. if it is it changes the attribute
 	//for that escape sequence. 
-	template<>
-	char* ParseEscape<char>(char * s, WORD& attrib)
+	template <typename charT> charT* ParseEscape(charT * s, WORD& attrib){}//you lose sir
+	template <> char* ParseEscape <char> (char * s, WORD& attrib)
 	{
 		char E[NUMBEROFESCAPE] = {'$', '#'};
 		s++;
 		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
 		{
-			if(s* == E[i]) //we found our char
+			if(*s == E[i]) //we found our char
 			{
 				//increment the pointer. we are now looking for the same char again,
 				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
 				s++;
-				if(s* == E[i])
+				if(*s == E[i])
 					break; //we are escaping, to print the escape charactor
-				switch(s*)
+				switch(*s)
 				{
 				case '0':attrib = 0 << i*4; break;
 				case '1':attrib = 1 << i*4; break;
@@ -81,22 +82,20 @@ private:
 		}
 		return s;
 	}
-
-	template<>
-	wchar_t* ParseEscape<wchar_t>(wchar_t *s, WORD& attrib)
+	template <> wchar_t* ParseEscape <wchar_t> (wchar_t *s, WORD& attrib)
 	{
 		wchar_t E[NUMBEROFESCAPE] = {L'$', L'#'};
 		s++;
 		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
 		{
-			if(s* == E[i]) //we found our char
+			if(*s == E[i]) //we found our char
 			{
 				//increment the pointer. we are now looking for the same char again,
 				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
 				s++;
-				if(s* == E[i])
+				if(*s == E[i])
 					break; //we are escaping, to print the escape charactor
-				switch(s*)
+				switch(*s)
 				{
 				case L'0':attrib = 0 << i*4; break;
 				case L'1':attrib = 1 << i*4; break;
@@ -123,6 +122,22 @@ private:
 
 		}
 		return s;
+	}
+
+	template <typename charT> CHAR_INFO BuildCharInfo(charT c, WORD attrib){}//you get nothing
+	template <> CHAR_INFO BuildCharInfo<char>(char c, WORD attrib)
+	{
+		CHAR_INFO ci;
+		ci.Attributes = attrib;
+		ci.Char.AsciiChar = c;
+		return ci;
+	}
+	template <> CHAR_INFO BuildCharInfo<wchar_t>(wchar_t c, WORD attrib)
+	{
+		CHAR_INFO ci;
+		ci.Attributes = attrib;
+		ci.Char.UnicodeChar = c;
+		return ci;
 	}
 
 	void SwapDisplayBuffers()
