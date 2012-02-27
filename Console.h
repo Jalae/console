@@ -11,6 +11,7 @@ namespace nitrocorp { namespace console {
 COORD const ORIGIN = {0,0};
 SMALL_RECT const ZERO_RECT = {0,0,0,0};
 SMALL_RECT const ONE_RECT = {0,0,1,1};
+size_t const NUMBEROFESCAPE = 2;
 
 template <typename charT>
 class console
@@ -34,6 +35,95 @@ private:
 
 	COORD BufferSize;
 	COORD vCursorPos;
+
+	//These functions look at the given charactor and determine if it is
+	//the start of an escape sequence. if it is it changes the attribute
+	//for that escape sequence. 
+	template<>
+	char* ParseEscape<char>(char * s, WORD& attrib)
+	{
+		char E[NUMBEROFESCAPE] = {'$', '#'};
+		s++;
+		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
+		{
+			if(s* == E[i]) //we found our char
+			{
+				//increment the pointer. we are now looking for the same char again,
+				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
+				s++;
+				if(s* == E[i])
+					break; //we are escaping, to print the escape charactor
+				switch(s*)
+				{
+				case '0':attrib = 0 << i*4; break;
+				case '1':attrib = 1 << i*4; break;
+				case '2':attrib = 2 << i*4; break;
+				case '3':attrib = 3 << i*4; break;
+				case '4':attrib = 4 << i*4; break;
+				case '5':attrib = 5 << i*4; break;
+				case '6':attrib = 6 << i*4; break;
+				case '7':attrib = 7 << i*4; break;
+				case '8':attrib = 8 << i*4; break;
+				case '9':attrib = 9 << i*4; break;
+				case 'a': case 'A':attrib = 10 << i*4; break;
+				case 'b': case 'B':attrib = 11 << i*4; break;
+				case 'c': case 'C':attrib = 12 << i*4; break;
+				case 'd': case 'D':attrib = 13 << i*4; break;
+				case 'e': case 'E':attrib = 14 << i*4; break;
+				case 'f': case 'F':attrib = 15 << i*4; break;
+				//cool huh?
+				default:  s--; break;
+				}
+				s++;
+				return s; //somehow have to check for the other escape 
+			}
+
+		}
+		return s;
+	}
+
+	template<>
+	wchar_t* ParseEscape<wchar_t>(wchar_t *s, WORD& attrib)
+	{
+		wchar_t E[NUMBEROFESCAPE] = {L'$', L'#'};
+		s++;
+		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
+		{
+			if(s* == E[i]) //we found our char
+			{
+				//increment the pointer. we are now looking for the same char again,
+				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
+				s++;
+				if(s* == E[i])
+					break; //we are escaping, to print the escape charactor
+				switch(s*)
+				{
+				case L'0':attrib = 0 << i*4; break;
+				case L'1':attrib = 1 << i*4; break;
+				case L'2':attrib = 2 << i*4; break;
+				case L'3':attrib = 3 << i*4; break;
+				case L'4':attrib = 4 << i*4; break;
+				case L'5':attrib = 5 << i*4; break;
+				case L'6':attrib = 6 << i*4; break;
+				case L'7':attrib = 7 << i*4; break;
+				case L'8':attrib = 8 << i*4; break;
+				case L'9':attrib = 9 << i*4; break;
+				case L'a': case L'A':attrib = 10 << i*4; break;
+				case L'b': case L'B':attrib = 11 << i*4; break;
+				case L'c': case L'C':attrib = 12 << i*4; break;
+				case L'd': case L'D':attrib = 13 << i*4; break;
+				case L'e': case L'E':attrib = 14 << i*4; break;
+				case L'f': case L'F':attrib = 15 << i*4; break;
+				//cool huh?
+				default:  s--; break;
+				}
+				s++;
+				return s; //somehow have to check for the other escape 
+			}
+
+		}
+		return s;
+	}
 
 	void SwapDisplayBuffers()
 	{
