@@ -61,30 +61,16 @@ private:
 				switch(i)
 				{
 					case 0: case 1:
-					switch(*s)
-					{
-						case '0':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 0 << i*4; break;
-						case '1':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 1 << i*4; break;
-						case '2':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 2 << i*4; break;
-						case '3':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 3 << i*4; break;
-						case '4':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 4 << i*4; break;
-						case '5':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 5 << i*4; break;
-						case '6':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 6 << i*4; break;
-						case '7':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 7 << i*4; break;
-						case '8':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 8 << i*4; break;
-						case '9':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 9 << i*4; break;
-						case 'a': case 'A':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 10 << i*4; break;
-						case 'b': case 'B':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 11 << i*4; break;
-						case 'c': case 'C':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 12 << i*4; break;
-						case 'd': case 'D':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 13 << i*4; break;
-						case 'e': case 'E':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 14 << i*4; break;
-						case 'f': case 'F':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 15 << i*4; break;
-						//cool huh?
-						default:  s--; break;
-					}
-					s++;
-					break;
-
+						if(*s>='0' && *s <= '9')
+							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | *s - '0' << i*4; 
+						else if(*s>='a' && *s <= 'f')
+							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - 'a' + 10) << i*4;
+						else if(*s>='A' && *s <= 'F')
+							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - 'A' + 10) << i*4;
+						else
+							s--;
+						s++;
+						break;
 					case 2: // \n
 						vCursorPos.Y = vCursorPos.Y+1;
 						vCursorPos.X = 0;
@@ -116,30 +102,16 @@ private:
 				switch(i)
 				{
 					case 0: case 1:
-					switch(*s)
-					{
-						case L'0':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 0 << i*4; break;
-						case L'1':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 1 << i*4; break;
-						case L'2':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 2 << i*4; break;
-						case L'3':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 3 << i*4; break;
-						case L'4':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 4 << i*4; break;
-						case L'5':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 5 << i*4; break;
-						case L'6':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 6 << i*4; break;
-						case L'7':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 7 << i*4; break;
-						case L'8':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 8 << i*4; break;
-						case L'9':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 9 << i*4; break;
-						case L'a': case L'A':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 10 << i*4; break;
-						case L'b': case L'B':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 11 << i*4; break;
-						case L'c': case L'C':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 12 << i*4; break;
-						case L'd': case L'D':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 13 << i*4; break;
-						case L'e': case L'E':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 14 << i*4; break;
-						case L'f': case L'F':CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | 15 << i*4; break;
-						//cool huh?
-						default:  s--; break;
-					}
-					s++;
-					break;
-
+						if(*s>=L'0' && *s <= L'9')
+							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | *s - L'0' << i*4; 
+						else if(*s>=L'a' && *s <= L'f')
+							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - L'a' + 10) << i*4;
+						else if(*s>=L'A' && *s <= L'F')
+							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - L'A' + 10) << i*4;
+						else
+							s--;
+						s++;
+						break;
 					case 2: // \n
 						vCursorPos.Y = vCursorPos.Y+1;
 						vCursorPos.X = 0;
@@ -159,7 +131,8 @@ private:
 	{
 		CHAR_INFO ci;
 		ci.Attributes = CurrentAttribute;
-		ci.Char.AsciiChar = c;
+		ci.Char.UnicodeChar = c;
+		// this works because of the union, and the top half needs init to 0
 		return ci;
 	}
 	template <> CHAR_INFO BuildCharInfo<wchar_t>(wchar_t c)
