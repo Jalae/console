@@ -203,7 +203,35 @@ public:
 	}
 
 //Output Functions
+	void Draw()
+	{
+		SwapDisplayBuffers();
+	}
 
+	void Write(charT* str)
+	{
+			CHAR_INFO temp;
+			WORD attrib=8;
+			while(*str)
+			{
+				//figureout if str* is an escape sequence-|
+				//if it is change attrib to match---------|-1 function 
+				ParseEscape(str, attrib);
+				//build temp
+				temp = BuildCharInfo(*str, attrib);
+				SMALL_RECT rec = {vCursorPos.X,vCursorPos.Y,vCursorPos.X,vCursorPos.Y};
+				WriteConsoleOutput(
+						ConsoleState->out_buffer,
+						&temp,
+						ONE_COORD,
+						ORIGIN,
+						&rec
+					);
+				vCursorPos.X++;
+				str++;
+			}
+
+	}
 
 //Input Functions
 
