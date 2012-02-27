@@ -1,8 +1,8 @@
 #include <Windows.h>
 #include "ioState.h"
 
-namespace _console
-{
+namespace nitrocorp { namespace console {
+
 template <typename charT>
 class console
 {
@@ -224,4 +224,4 @@ typedef console<char> console_;
 typedef console<wchar_t> console_w;
 typedef console<TCHAR> console_T;
 
-}
+} } //namespace

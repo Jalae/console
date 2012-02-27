@@ -1,12 +1,10 @@
+#pragma once
+
 #include <Windows.h>
 #include <iostream>
 
-#ifndef IOSTATE_
+namespace nitrocorp { namespace console {
 
-#define IOSTATE_
-
-namespace _console
-{
 class ioState
 {
 public:
@@ -59,6 +57,5 @@ public:
 
 void clearInputEvents(ioState&);
 void getInputEvents(ioState&);
-}
 
-#endif
+} }
