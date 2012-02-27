@@ -149,16 +149,20 @@ private:
 		// 1: COPY EVERYTHING. this may or may not be fast in runtime. i have no idea because i currently don't know if writes to a not displaying buffer suffers display lag
 		// 2: COPY CHANGES. this requires the code to walk through and compare every element, fairly computation intensive, but may be considerably faster if there is lag
 		//method 1
-		CHAR_INFO * const buffer = new CHAR_INFO [BufferSize.X * BufferSize.Y];
+		CHAR_INFO * buffer  = new CHAR_INFO [BufferSize.X * BufferSize.Y];
 		COORD size = BufferSize;
-		SMALL_RECT rec = {0,0,BufferSize.X,BufferSize.Y};
-		ReadConsoleOutput(
+		SMALL_RECT rec = {0,0,BufferSize.X-1,BufferSize.Y-1};
+		bool success = ReadConsoleOutput(
 						ConsoleState->stout,
 						buffer,
 						size,
 						ORIGIN,
 						&rec
 					);
+		if(!success)
+		{
+			//break here;
+		}
 		WriteConsoleOutput(
 						ConsoleState->out_buffer,
 						buffer,
@@ -167,7 +171,6 @@ private:
 						&rec
 					);
 		delete[] buffer;
-
 	}
 	void ToggleDisplayBuffers()
 {
