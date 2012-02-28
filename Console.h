@@ -1,4 +1,5 @@
 #include <Windows.h>
+
 #include "ioState.h"
 
 
@@ -7,12 +8,17 @@
 
 
 namespace nitrocorp { namespace console {
-
+	//put these somewhere
 COORD const ORIGIN = {0,0};
 COORD const ONE_COORD = {1,1};
 SMALL_RECT const ZERO_RECT = {0,0,0,0};
 SMALL_RECT const ONE_RECT = {0,0,1,1};
 size_t const NUMBEROFESCAPE = 3;
+// we'll hold off on these
+/*
+#define RED_FG_ = "$C"
+#define GREEN_FG_ = "$A"
+*/
 
 template <typename charT>
 class console
@@ -20,21 +26,10 @@ class console
 private:
 	static console InnerConsole;
 	
-
-	console()
-	{
-		ConsoleState = nullptr;
-		ConsoleState = new ioState;
-		HideCursor();
-		BufferSize.X = 0;
-		BufferSize.Y = 0;
-		vCursorPos.X = 0;
-		vCursorPos.Y = 0;
-		CurrentAttribute = 15;//black background white text
-	}
+	console();
+	~console();
 
 	ioState* ConsoleState;
-
 	COORD BufferSize;
 	COORD vCursorPos;
 	WORD CurrentAttribute;
@@ -42,156 +37,19 @@ private:
 	//These functions look at the given charactor and determine if it is
 	//the start of an escape sequence. if it is it changes the attribute
 	//for that escape sequence. 
-	template <typename charT> charT* ParseEscape(charT * s){}//you lose sir
-	template <> char* ParseEscape <char> (char * s)
-	{
-		char E[NUMBEROFESCAPE] = {'$', '#', '\n'};
-//		s++;
-		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
-		{
-			if(*s == E[i]) //we found our char
-			{
-				//increment the pointer. we are now looking for the same char again,
-				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
-				s++;
+	template <typename charT> charT* ParseEscape(charT * s);//you lose sir
+	template <typename charT> CHAR_INFO BuildCharInfo(charT c);//you get nothing
+	
 
-				if(*s == E[i])
-					break; //we are escaping, to print the escape charactor. this isn't finding one
+	void SwapDisplayBuffers();
 
-				switch(i)
-				{
-					case 0: case 1:
-						if(*s>='0' && *s <= '9')
-							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | *s - '0' << i*4; 
-						else if(*s>='a' && *s <= 'f')
-							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - 'a' + 10) << i*4;
-						else if(*s>='A' && *s <= 'F')
-							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - 'A' + 10) << i*4;
-						else
-							s--;
-						s++;
-						break;
-					case 2: // \n
-						vCursorPos.Y = vCursorPos.Y+1;
-						vCursorPos.X = 0;
-						break;
-					default: ;
-				}
-				i = -1; //we found one. start looking again
+	void ToggleDisplayBuffers();
 
-			}
-
-		}
-		return s;
-	}
-	template <> wchar_t* ParseEscape <wchar_t> (wchar_t * s)
-	{
-		wchar_t E[NUMBEROFESCAPE] = {L'$', L'#', L'\n'};
-//		s++;
-		for(size_t i = 0; i < NUMBEROFESCAPE; i++)
-		{
-			if(*s == E[i]) //we found our char
-			{
-				//increment the pointer. we are now looking for the same char again,
-				//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
-				s++;
-
-				if(*s == E[i])
-					break; //we are escaping, to print the escape charactor. this isn't finding one
-
-				switch(i)
-				{
-					case 0: case 1:
-						if(*s>=L'0' && *s <= L'9')
-							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | *s - L'0' << i*4; 
-						else if(*s>=L'a' && *s <= L'f')
-							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - L'a' + 10) << i*4;
-						else if(*s>=L'A' && *s <= L'F')
-							CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - L'A' + 10) << i*4;
-						else
-							s--;
-						s++;
-						break;
-					case 2: // \n
-						vCursorPos.Y = vCursorPos.Y+1;
-						vCursorPos.X = 0;
-						break;
-					default: ;
-				}
-				i = -1; //we found one. start looking again
-
-			}
-
-		}
-		return s;
-	}
-
-	template <typename charT> CHAR_INFO BuildCharInfo(charT c){}//you get nothing
-	template <> CHAR_INFO BuildCharInfo<char>(char c)
-	{
-		CHAR_INFO ci;
-		ci.Attributes = CurrentAttribute;
-		ci.Char.UnicodeChar = c;
-		// this works because of the union, and the top half needs init to 0
-		return ci;
-	}
-	template <> CHAR_INFO BuildCharInfo<wchar_t>(wchar_t c)
-	{
-		CHAR_INFO ci;
-		ci.Attributes = CurrentAttribute;
-		ci.Char.UnicodeChar = c;
-		return ci;
-	}
-
-	void SwapDisplayBuffers()
-	{
-		//swap the names
-		ToggleDisplayBuffers();
-		//now we need to make the secondarybuffer the same as what is being displayed.
-		//this can be done in 1 of 2 ways.
-		// 1: COPY EVERYTHING. this may or may not be fast in runtime. i have no idea because i currently don't know if writes to a not displaying buffer suffers display lag
-		// 2: COPY CHANGES. this requires the code to walk through and compare every element, fairly computation intensive, but may be considerably faster if there is lag
-		//method 1
-		CHAR_INFO * buffer  = new CHAR_INFO [BufferSize.X * BufferSize.Y];
-		COORD size = BufferSize;
-		SMALL_RECT rec = {0,0,BufferSize.X-1,BufferSize.Y-1};
-		ReadConsoleOutput(
-						ConsoleState->stout,
-						buffer,
-						size,
-						ORIGIN,
-						&rec
-					);
-
-		WriteConsoleOutput(
-						ConsoleState->out_buffer,
-						buffer,
-						size,
-						ORIGIN,
-						&rec
-					);
-		delete[] buffer;
-	}
-	void ToggleDisplayBuffers()
-{
-	HANDLE temp;
-	temp = ConsoleState->stout;
-	ConsoleState->stout = ConsoleState->out_buffer;
-	ConsoleState->out_buffer = temp;
-	//make the active buffer the previous secondarybuffer
-	//NOTE: these lines may need changed, if switching buffers suffers from console lag for every charactor.
-	SetConsoleActiveScreenBuffer(ConsoleState->stout);
-}
-
-
+	typedef charT char_type;
 
 public:
 
-	typedef charT char_type;
-	~console()
-	{
-		delete ConsoleState;
-	}
+
 
 //Singleton getters
 	static console* GetConsole()
@@ -236,6 +94,7 @@ public:
 			}
 
 	}
+
 
 //Input Functions
 
@@ -370,5 +229,10 @@ typedef console<TCHAR> console_T;
 
 }}
 
+//za definitions
+#include "Console_Aux.h"
+
 #endif
+
+
 
