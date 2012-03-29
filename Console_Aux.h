@@ -1,14 +1,14 @@
 
 #ifndef _NC_CONSOLE_AUX__
 #define _NC_CONSOLE_AUX__
-//here to make intellisence happy
+//here to make intellisence happier
 #include "Console.h"
 
 
 namespace nitrocorp { namespace console {
-
+///////////////////////////////////////////////////////////////////////////////
 //private methods which are required by usermode methods
-
+///////////////////////////////////////////////////////////////////////////////
 template<typename charT>
 console<charT>::console()
 {
@@ -22,12 +22,14 @@ console<charT>::console()
 	CurrentAttribute = 15;//black background white text
 }
 
+//console destructor
 template<typename charT>
 console<charT>::~console()
 	{
 		delete ConsoleState;
 	}
 
+//parse functions
 template<typename charT>
 charT* console<charT>::ParseEscape(charT* s)
 {}
@@ -106,7 +108,7 @@ wchar_t* console<wchar_t>::ParseEscape <wchar_t> (wchar_t * s)
 	return s;
 }
 
-
+//Build char struct
 template <typename charT>
 CHAR_INFO console<charT>::BuildCharInfo(charT c)
 {}
@@ -128,6 +130,7 @@ CHAR_INFO console<wchar_t>::BuildCharInfo <wchar_t> (wchar_t c)
 		return ci;
 	}
 
+//swaps the active and buffer display buffers
 template <typename charT>
 void console<charT>::SwapDisplayBuffers()
 {
@@ -159,6 +162,7 @@ void console<charT>::SwapDisplayBuffers()
 	delete[] buffer;
 }
 
+//Toggle the display buffers
 template <typename charT>
 void console<charT>::ToggleDisplayBuffers()
 {
@@ -168,9 +172,13 @@ void console<charT>::ToggleDisplayBuffers()
 	ConsoleState->out_buffer = temp;
 	//make the active buffer the previous secondarybuffer
 	//NOTE: these lines may need changed, if switching buffers suffers from console lag for every charactor.
+	//^left for historical reasons. In practice it works plenty fast
 	SetConsoleActiveScreenBuffer(ConsoleState->stout);
 }
 
 //done
+
+
+
 }}
 #endif

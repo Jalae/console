@@ -40,11 +40,8 @@ private:
 	template <typename charT> charT* ParseEscape(charT * s);//you lose sir
 	template <typename charT> CHAR_INFO BuildCharInfo(charT c);//you get nothing
 	
-
 	void SwapDisplayBuffers();
-
 	void ToggleDisplayBuffers();
-
 	typedef charT char_type;
 
 public:
@@ -64,36 +61,9 @@ public:
 	}
 
 //Output Functions
-	void Draw()
-	{
-		SwapDisplayBuffers();
-	}
-
-	void Write(charT* str)
-	{
-			CHAR_INFO temp;
-			while(*str)
-			{
-				//figureout if str* is an escape sequence-|
-				//if it is change attrib to match---------|-1 function 
-				str = ParseEscape(str);
-				if(!*str)
-					return; //we don't want to write a 0
-				//build temp
-				temp = BuildCharInfo(*str);
-				SMALL_RECT rec = {vCursorPos.X,vCursorPos.Y,vCursorPos.X,vCursorPos.Y};
-				WriteConsoleOutput(
-						ConsoleState->out_buffer,
-						&temp,
-						ONE_COORD,
-						ORIGIN,
-						&rec
-					);
-				vCursorPos.X++;
-				str++;
-			}
-
-	}
+	void Draw();
+	void Write(charT* str);
+	
 
 
 //Input Functions
