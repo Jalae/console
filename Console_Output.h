@@ -15,7 +15,7 @@ namespace nitrocorp { namespace console {
 	}
 
 	template<typename charT>
-	void Write(charT* str)
+	void console<charT>::Write(charT* str)
 	{
 			CHAR_INFO temp;
 			while(*str)
@@ -40,6 +40,13 @@ namespace nitrocorp { namespace console {
 			}
 	}
 
-
+	/*
+	template<typename charT>
+	console<charT>& console<charT>::operator<< (console<charT>& out, charT* str)
+	{
+		Write(str);
+		return out;
+	}
+	*/
 
 }}

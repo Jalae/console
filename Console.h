@@ -63,8 +63,8 @@ public:
 //Output Functions
 	void Draw();
 	void Write(charT* str);
-	
-
+	//console & operator<<(console & out, charT* str);
+	//hmm... i forgot this won't work... LH needs to be not a pointer for this.
 
 //Input Functions
 
