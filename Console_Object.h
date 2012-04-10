@@ -96,6 +96,8 @@ public:
 
 
 
+	//and these you gotta
+	virtual void Draw() = 0;
 
 
 };
