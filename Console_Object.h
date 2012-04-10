@@ -14,6 +14,19 @@
 #define _NC_CONSOLE_OBJECT__
 
 namespace nitrocorp{ namespace console {
+class absObject
+{
+	COORD m_Position;
+	SMALL_RECT m_Area;
+	
+	//assigned with object_states
+	WORD m_state; 
+
+public:
+
+};
+
+
 
 
 }}
