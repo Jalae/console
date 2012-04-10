@@ -32,6 +32,32 @@ class absObject
 	WORD m_state; 
 
 public:
+	// this stuff will need moved to it's own file
+	absObject():m_Position(ORIGIN), m_Area(ZERO_RECT), m_state(object_state::EMPTY)
+	{}
+	virtual ~absObject()
+	{}
+
+	void setSize(size_t const X, size_t const Y)
+	{
+		m_Area.Bottom = Y;
+		m_Area.Right = X;
+	}
+	void getSize(size_t & X, size_t & Y) const
+	{
+		Y = m_Area.Bottom;
+		X = m_Area.Right;
+	}
+	void addState(object_state a)
+	{
+		m_state|=a;
+	}
+	void removeState(object_state a)
+	{
+		m_state&=~a;
+	}
+
+
 
 };
 
