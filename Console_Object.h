@@ -55,6 +55,7 @@ public:
 		COORD temp = {(m_Area.Bottom - m_Area.Top), (m_Area.Right - m_Area.Left)};
 		return temp;
 	}
+
 	void addState(object_state a)
 	{
 		m_state|=a;
@@ -91,6 +92,16 @@ public:
 		//m_Area.Right = m_Position + (m_Area.Right - m_Area.Left);
 		//m_Area.Left = m_Position;
 		m_Position.Y = Y;
+	}
+
+	COORD getPosition() const
+	{
+		return m_Position;
+	}
+	void getPosition(size_t & X, size_t & Y) const
+	{
+		X = m_Position.X;
+		Y = m_Position.Y;
 	}
 
 
