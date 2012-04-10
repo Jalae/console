@@ -26,7 +26,7 @@ namespace nitrocorp{ namespace console {
 class absObject
 {
 	COORD m_Position;
-	SMALL_RECT m_Area;
+	SMALL_RECT m_Area; //hmm...
 	
 	//assigned with object_states
 	WORD m_state; 
@@ -37,16 +37,23 @@ public:
 	{}
 	virtual ~absObject()
 	{}
+	//no touchy these functions
 
 	void setSize(size_t const X, size_t const Y)
 	{
-		m_Area.Bottom = Y;
-		m_Area.Right = X;
+		m_Area.Bottom = m_Area.Top + Y;
+		m_Area.Right = m_Area.Left + X;
 	}
+
 	void getSize(size_t & X, size_t & Y) const
 	{
-		Y = m_Area.Bottom;
-		X = m_Area.Right;
+		Y = m_Area.Bottom - m_Area.Top;
+		X = m_Area.Right - m_Area.Left;
+	}
+	COORD getSize() const
+	{
+		COORD temp = {(m_Area.Bottom - m_Area.Top), (m_Area.Right - m_Area.Left)};
+		return temp;
 	}
 	void addState(object_state a)
 	{
