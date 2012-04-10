@@ -68,6 +68,22 @@ public:
 		return m_state;
 	}
 
+	//won't move left or above the origin
+	//X > 0 right
+	//Y > 0 down
+	void Move(int X, int Y)
+	{
+		m_Position.X = m_Position.X+X;
+		m_Position.X = (m_Position.X > 0)?m_Position.X:0;
+		//uncommenting this can't hurt anything... but i don't know if i want to do it.
+		//m_Area.Right = m_Position.X + (m_Area.Right - m_Area.Left);
+		//m_Area.Left = m_Position.X;
+		m_Position.Y = m_Position.Y+Y;
+		m_Position.Y = (m_Position.Y > 0)?m_Position.Y:0;
+		//m_Area.Bottom = m_Position.Y + (m_Area.Bottom - m_Area.Top);
+		//m_Area.Top = m_Position.Y;
+
+	}
 	//set it how ever you want;
 	void MoveAbsolute(size_t X, size_t Y)
 	{
