@@ -63,6 +63,22 @@ public:
 	{
 		m_state&=~a;
 	}
+	WORD State() const
+	{
+		return m_state;
+	}
+
+	//set it how ever you want;
+	void MoveAbsolute(size_t X, size_t Y)
+	{
+		m_Position.X = X;
+		//m_Area.Right = m_Position + (m_Area.Right - m_Area.Left);
+		//m_Area.Left = m_Position;
+		m_Position.Y = Y;
+	}
+
+
+
 
 
 
