@@ -76,8 +76,8 @@
   <ItemGroup>
     <ClInclude Include="console.h" />
     <ClInclude Include="Console_Aux.h" />
+    <ClInclude Include="Console_InOut.h" />
     <ClInclude Include="Console_Object.h" />
-    <ClInclude Include="Console_Output.h" />
     <ClInclude Include="ioState.h" />
     <ClInclude Include="region.h" />
   </ItemGroup>

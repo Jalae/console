@@ -21,7 +21,31 @@ size_t const NUMBEROFESCAPE = 3;
 */
 
 template <typename charT>
-class console
+class console;
+
+template <typename charT>
+class console_streambuf : public std::basic_streambuf<charT>
+{
+protected:
+	console<charT> * _console;
+
+public:
+	console_streambuf( console<charT> * _console ) : _console( _console )
+	{}
+
+	int_type overflow(int_type ch)
+	{
+		if( traits_type::eq_int_type(ch, traits_type::eof()) != true )
+		{
+			_console->Write( ch );
+		}
+		
+		return traits_type::not_eof(ch);
+	}
+};
+
+template <typename charT>
+class console : public std::basic_ostream<charT>
 {
 private:
 	static console InnerConsole;
@@ -33,12 +57,18 @@ private:
 	COORD BufferSize;
 	COORD vCursorPos;
 	WORD CurrentAttribute;
+	console_streambuf<charT> streambuf;
+	charT escapeMode;
+	static charT const FG_ESCAPE;//$
+	static charT const BG_ESCAPE;//#
+	static charT const NL_ESCAPE;
+	static charT const CR_ESCAPE;
 
 	//These functions look at the given charactor and determine if it is
 	//the start of an escape sequence. if it is it changes the attribute
 	//for that escape sequence. 
-	template <typename charT> charT* ParseEscape(charT * s);//you lose sir
-	template <typename charT> CHAR_INFO BuildCharInfo(charT c);//you get nothing
+	charT ParseEscape(charT s);
+	CHAR_INFO BuildCharInfo(charT c);
 	
 	void SwapDisplayBuffers();
 	void ToggleDisplayBuffers();
@@ -62,9 +92,8 @@ public:
 
 //Output Functions
 	void Draw();
-	void Write(charT* str);
-	//console & operator<<(console & out, charT* str);
-	//hmm... i forgot this won't work... LH needs to be not a pointer for this.
+
+	void Write(charT ch);
 
 //Input Functions
 
@@ -183,7 +212,12 @@ public:
 		return fn.dwFontSize;
 	}
 
+//Input
 
+	bool WaitForInput(DWORD timeout = 0)
+	{
+		return WAIT_OBJECT_0 == WaitForSingleObject( ConsoleState->stin, timeout );
+	}
 };
 
 /*
@@ -201,6 +235,7 @@ typedef console<TCHAR> console_T;
 
 //za definitions
 #include "Console_Aux.h"
+#include "Console_InOut.h"
 
 #endif
 
