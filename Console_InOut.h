@@ -15,29 +15,26 @@ namespace nitrocorp { namespace console {
 	}
 
 	template<typename charT>
-	void console<charT>::Write(charT* str)
+	void console<charT>::Write(charT ch)
 	{
-			CHAR_INFO temp;
-			while(*str)
-			{
-				//figureout if str* is an escape sequence-|
-				//if it is change attrib to match---------|-1 function 
-				str = ParseEscape(str);
-				if(!*str)
-					return; //we don't want to write a 0
-				//build temp
-				temp = BuildCharInfo(*str);
-				SMALL_RECT rec = {vCursorPos.X,vCursorPos.Y,vCursorPos.X,vCursorPos.Y};
-				WriteConsoleOutput(
-						ConsoleState->out_buffer,
-						&temp,
-						ONE_COORD,
-						ORIGIN,
-						&rec
-					);
-				vCursorPos.X++;
-				str++;
-			}
+		CHAR_INFO temp;
+			
+		//if it is change attrib to match---------|-1 function 
+		ch = ParseEscape(ch);
+		if(ch == 0)
+			return; //we don't want to write a 0
+
+		//build temp
+		temp = BuildCharInfo(ch);
+		SMALL_RECT rec = {vCursorPos.X,vCursorPos.Y,vCursorPos.X,vCursorPos.Y};
+		WriteConsoleOutput(
+				ConsoleState->out_buffer,
+				&temp,
+				ONE_COORD,
+				ORIGIN,
+				&rec
+			);
+		vCursorPos.X++;
 	}
 
 
@@ -55,3 +52,5 @@ namespace nitrocorp { namespace console {
 
 
 }}
+
+#endif

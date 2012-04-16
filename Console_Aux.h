@@ -3,6 +3,7 @@
 #define _NC_CONSOLE_AUX__
 //here to make intellisence happier
 #include "Console.h"
+#include "cstdint"
 
 
 namespace nitrocorp { namespace console {
@@ -11,6 +12,7 @@ namespace nitrocorp { namespace console {
 ///////////////////////////////////////////////////////////////////////////////
 template<typename charT>
 console<charT>::console()
+	: streambuf(this), std::basic_ostream<charT>( &streambuf ), escapeMode(0)
 {
 	ConsoleState = nullptr;
 	ConsoleState = new ioState;
@@ -30,82 +32,80 @@ console<charT>::~console()
 	}
 
 //parse functions
-template<typename charT>
-charT* console<charT>::ParseEscape(charT* s)
-{}
-template <>
-char* console<char>::ParseEscape <char> (char * s)
+
+int8_t hex2num(char ch)
 {
-	char E[NUMBEROFESCAPE] = {'$', '#', '\n'};
-	for(size_t i = 0; i < NUMBEROFESCAPE; i++)
-	{
-		if(*s == E[i]) //we found our char
-		{
-			//increment the pointer. we are now looking for the same char again,
-			//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
-			s++;
-			if(*s == E[i])
-				break; //we are escaping, to print the escape charactor. this isn't finding one
-			switch(i)
-			{
-				case 0: case 1:
-					if(*s>='0' && *s <= '9')
-						CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | *s - '0' << i*4; 
-					else if(*s>='a' && *s <= 'f')
-						CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - 'a' + 10) << i*4;
-					else if(*s>='A' && *s <= 'F')
-						CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - 'A' + 10) << i*4;
-					else
-						s--;
-					s++;
-					break;
-				case 2: // \n
-					vCursorPos.Y = vCursorPos.Y+1;
-					vCursorPos.X = 0;
-					break;
-				default: ;
-			}
-			i = -1; //we found one. start looking again
-		}
-	}
-	return s;
+	int8_t num = -1;
+	if(ch >= '0' && ch <= '9')
+		num = ch-'0';
+	else if(ch >= 'a' && ch <= 'f')
+		num = ch-'a';
+	else if( ch >= 'A' && ch <= 'F' )
+		num = ch-'A';
+	return num;
 }
-template <>
-wchar_t* console<wchar_t>::ParseEscape <wchar_t> (wchar_t * s)
+
+int8_t hex2num(wchar_t ch)
 {
-	wchar_t E[NUMBEROFESCAPE] = {L'$', L'#', L'\n'};
-	for(size_t i = 0; i < NUMBEROFESCAPE; i++)
+	int8_t num = -1;
+	if(ch >= L'0' && ch <= L'9')
+		num = ch-L'0';
+	else if(ch >= L'a' && ch <= L'f')
+		num = ch-L'a'+10;
+	else if( ch >= L'A' && ch <= L'F' )
+		num = ch-L'A'+10;
+	return num;
+}
+
+template <> char const console<char>::FG_ESCAPE = '$';//$
+template <> char const console<char>::BG_ESCAPE = '#';//#
+template <> char const console<char>::NL_ESCAPE = '\n';
+template <> char const console<char>::CR_ESCAPE = '\r';
+
+template <> wchar_t const console<wchar_t>::FG_ESCAPE = L'$';//$
+template <> wchar_t const console<wchar_t>::BG_ESCAPE = L'#';//#
+template <> wchar_t const console<wchar_t>::NL_ESCAPE = L'\n';
+template <> wchar_t const console<wchar_t>::CR_ESCAPE = L'\r';
+
+template <typename charT>
+charT console<charT>::ParseEscape(charT ch)
+{
+	if( escapeMode == BG_ESCAPE )
 	{
-		if(*s == E[i]) //we found our char
+		int8_t num = hex2num( ch );
+		CurrentAttribute = (CurrentAttribute & ~(15<<4)) | num << 4;
+		escapeMode = 0;
+	}
+	else if( escapeMode == FG_ESCAPE )
+	{
+		int8_t num = hex2num( ch );
+		CurrentAttribute = (CurrentAttribute & ~(15<<0)) | num << 0;
+		escapeMode = 0;
+	}
+	else
+	{
+		if( ch == BG_ESCAPE )
 		{
-			//increment the pointer. we are now looking for the same char again,
-			//or a Hex char, where the bits represent from MSB to LSB -> intence, red, green, blue
-			s++;
-			if(*s == E[i])
-				break; //we are escaping, to print the escape charactor. this isn't finding one
-			switch(i)
-			{
-				case 0: case 1:
-					if(*s>=L'0' && *s <= L'9')
-						CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | *s - L'0' << i*4; 
-					else if(*s>=L'a' && *s <= L'f')
-						CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - L'a' + 10) << i*4;
-					else if(*s>=L'A' && *s <= L'F')
-						CurrentAttribute = (CurrentAttribute & ~(15<<i*4)) | (*s - L'A' + 10) << i*4;
-					else
-						s--;
-					s++;
-					break;
-				case 2: // \n
-					vCursorPos.Y = vCursorPos.Y+1;
-					vCursorPos.X = 0;
-					break;
-				default: ;
-			}
-			i = -1; //we found one. start looking again
+			escapeMode = BG_ESCAPE;
+		}
+		else if( ch == FG_ESCAPE )
+		{
+			escapeMode = FG_ESCAPE;
+		}
+		else if( ch == NL_ESCAPE )
+		{
+			vCursorPos.Y = vCursorPos.Y+1;
+			vCursorPos.X = 0;
+		}
+		else if( ch == CR_ESCAPE )
+		{
+		}	
+		else
+		{
+			return ch;
 		}
 	}
-	return s;
+	return 0;
 }
 
 //Build char struct
@@ -113,7 +113,7 @@ template <typename charT>
 CHAR_INFO console<charT>::BuildCharInfo(charT c)
 {}
 template <> 
-CHAR_INFO console<char>::BuildCharInfo <char> (char c)
+CHAR_INFO console<char>::BuildCharInfo(char c)
 {
 	CHAR_INFO ci;
 	ci.Attributes = CurrentAttribute;
@@ -122,7 +122,7 @@ CHAR_INFO console<char>::BuildCharInfo <char> (char c)
 	return ci;
 }
 template <>
-CHAR_INFO console<wchar_t>::BuildCharInfo <wchar_t> (wchar_t c)
+CHAR_INFO console<wchar_t>::BuildCharInfo(wchar_t c)
 	{
 		CHAR_INFO ci;
 		ci.Attributes = CurrentAttribute;
